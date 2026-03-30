@@ -29,7 +29,6 @@ export default function Register() {
             </label>
             <select className="w-full bg-rush-dark border border-white/10 rounded-lg p-4 text-white focus:border-rush-bronze focus:outline-none appearance-none cursor-pointer">
               <option>Motorcycle</option>
-              <option>Bicycle (E-bike)</option>
               <option>Delivery Van</option>
               <option>Mini-truck</option>
             </select>
