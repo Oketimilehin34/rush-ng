@@ -3,135 +3,100 @@
 import { useState } from "react";
 
 export default function OrderPage() {
-  // Track which job has been accepted
+  const [activeTab, setActiveTab] = useState<"instant" | "waybill">("instant");
   const [acceptedId, setAcceptedId] = useState<string | null>(null);
 
-  const orders = [
-    { 
-      id: "ORD-992", 
-      pickup: "Ikeja Computer Village", 
-      dropoff: "Victoria Island", 
-      price: "₦4,500", 
-      type: "Electronics",
-      time: "15 mins away"
-    },
-    { 
-      id: "ORD-981", 
-      pickup: "Yaba (Tejuosho Market)", 
-      dropoff: "Lekki Phase 1", 
-      price: "₦3,800", 
-      type: "Fashion",
-      time: "8 mins away"
-    },
-    { 
-      id: "ORD-975", 
-      pickup: "Surulere (National Stadium)", 
-      dropoff: "Ikeja (Allen Ave)", 
-      price: "₦2,200", 
-      type: "Documents",
-      time: "22 mins away"
-    },
+  const allOrders = [
+    { id: "INS-101", category: "instant", pickup: "Ikeja Computer Village", dropoff: "Victoria Island", price: "₦4,500", type: "Bike", time: "Immediate" },
+    { id: "WB-502", category: "waybill", pickup: "Oshodi Interchange", dropoff: "Ibadan (Challenge)", price: "₦12,000", type: "Mini-Van", time: "Scheduled: 2PM" },
+    { id: "INS-102", category: "instant", pickup: "Yaba", dropoff: "Lekki Phase 1", price: "₦3,800", type: "Bike", time: "Immediate" },
+    { id: "WB-505", category: "waybill", pickup: "Alaba International", dropoff: "Onitsha Main Market", price: "₦45,000", type: "Truck", time: "Departs: 5AM" },
   ];
 
-  const handleAccept = (id: string) => {
-    // Only allow accepting if not already accepted
-    if (acceptedId === id) return;
-    setAcceptedId(id);
+  const filteredOrders = allOrders.filter(order => order.category === activeTab);
+
+  const handleAction = (id: string) => {
+    if (acceptedId === id) {
+      // If already accepted, this click will CANCEL
+      const confirmCancel = confirm("Are you sure you want to cancel this order? This might affect your rider rating.");
+      if (confirmCancel) setAcceptedId(null);
+    } else {
+      // Otherwise, ACCEPT the job
+      setAcceptedId(id);
+    }
   };
 
   return (
     <main className="min-h-screen bg-rush-dark text-white p-6 md:p-10">
-      {/* Header Section */}
-      <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-2">
-            Available <span className="text-rush-bronze">Deliveries</span>
-          </h1>
-          <p className="text-rush-gray-text text-xs uppercase font-bold tracking-[0.2em]">
-            Real-time Lagos Network • 3 Active Jobs
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2 bg-rush-surface px-4 py-2 rounded-full border border-white/5">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-[10px] font-black uppercase italic text-gray-400">Searching for nearby orders...</span>
+      <header className="mb-8">
+        <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-4">
+          Order <span className="text-rush-bronze">Terminal</span>
+        </h1>
+
+        <div className="flex gap-2 p-1 bg-rush-surface border border-white/5 rounded-xl max-w-sm">
+          {["instant", "waybill"].map((tab) => (
+            <button 
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase italic tracking-widest transition-all ${
+                activeTab === tab ? "bg-amber-gradient text-black" : "text-gray-500"
+              }`}
+            >
+              {tab === "instant" ? "Instant Delivery" : "Waybilling"}
+            </button>
+          ))}
         </div>
       </header>
 
-      {/* Orders List */}
       <div className="max-w-5xl space-y-4">
-        {orders.map((order) => (
+        {filteredOrders.map((order) => (
           <div 
             key={order.id} 
-            className={`bg-rush-surface border p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300 group shadow-2xl ${
-              acceptedId === order.id 
-              ? "border-green-500/50 bg-green-500/5" 
-              : "border-white/5 hover:border-rush-bronze/40 hover:translate-x-1"
+            className={`bg-rush-surface border p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all ${
+              acceptedId === order.id ? "border-green-500/30 ring-1 ring-green-500/20" : "border-white/5"
             }`}
           >
-            {/* Left: Order Info */}
-            <div className="space-y-4 flex-1">
-              <div className="flex items-center gap-3">
-                <span className="bg-rush-bronze/10 text-rush-bronze text-[10px] font-black px-2 py-1 rounded-sm italic uppercase tracking-widest">
-                  {order.id}
-                </span>
-                <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{order.type}</span>
-                <span className="text-rush-gray-text text-[10px] font-bold uppercase">• {order.time}</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-[10px] font-black text-rush-bronze uppercase bg-rush-bronze/10 px-2 py-1 italic">{order.id}</span>
+                <span className="text-[10px] text-gray-500 uppercase font-bold">• {order.type}</span>
+                {acceptedId === order.id && (
+                  <span className="text-[10px] text-green-400 uppercase font-black animate-pulse italic">• Active Job</span>
+                )}
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <p className="text-[9px] text-gray-500 uppercase font-black tracking-tighter">Pickup Point</p>
-                  <p className="text-lg font-bold text-white group-hover:text-rush-bronze transition-colors">
-                    {order.pickup}
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[9px] text-gray-600 uppercase font-black mb-1">Origin</p>
+                  <p className="text-lg font-bold">{order.pickup}</p>
                 </div>
-
-                <div className="space-y-1">
-                  <p className="text-[9px] text-gray-500 uppercase font-black tracking-tighter">Destination</p>
-                  <p className="text-lg font-bold text-white">{order.dropoff}</p>
+                <div>
+                  <p className="text-[9px] text-gray-600 uppercase font-black mb-1">Destination</p>
+                  <p className="text-lg font-bold">{order.dropoff}</p>
                 </div>
               </div>
             </div>
 
-            {/* Right: Pricing & CTA */}
             <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-4 md:border-l md:border-white/10 md:pl-8">
-              <div className="text-right">
-                <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest mb-1">Estimate</p>
-                <p className="text-4xl font-black italic text-white leading-none">{order.price}</p>
-              </div>
-
+              <p className="text-3xl font-black italic text-white">{order.price}</p>
+              
               <button 
-                onClick={() => handleAccept(order.id)}
+                onClick={() => handleAction(order.id)}
                 disabled={acceptedId !== null && acceptedId !== order.id}
-                className={`w-full md:w-48 py-4 rounded-xl uppercase italic font-black text-sm transition-all transform active:scale-95 shadow-xl ${
+                className={`w-full md:w-44 py-3 rounded-lg font-black italic text-xs uppercase transition-all shadow-xl ${
                   acceptedId === order.id 
-                    ? "bg-green-600 text-white shadow-[0_0_25px_rgba(22,163,74,0.4)] cursor-default" 
-                    : acceptedId !== null 
-                      ? "bg-gray-800 text-gray-600 cursor-not-allowed opacity-50"
-                      : "bg-amber-gradient text-black hover:shadow-[0_0_20px_rgba(214,140,69,0.4)]"
+                    ? "bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white" 
+                    : acceptedId !== null
+                      ? "bg-gray-800 text-gray-600 cursor-not-allowed grayscale"
+                      : "bg-amber-gradient text-black hover:scale-105"
                 }`}
               >
-                {acceptedId === order.id ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Job Accepted
-                  </span>
-                ) : (
-                  "Accept Job →"
-                )}
+                {acceptedId === order.id ? "Cancel Request" : "Accept Job"}
               </button>
             </div>
           </div>
         ))}
       </div>
-
-      {/* Footer hint */}
-      <p className="mt-8 text-[10px] text-gray-600 text-center uppercase font-bold tracking-[0.3em]">
-        Ensure your GPS is active before heading to the pickup point
-      </p>
     </main>
   );
 }
